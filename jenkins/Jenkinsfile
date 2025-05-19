@@ -1,0 +1,88 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: build-pod
+            spec:
+              containers:
+              - name: docker
+                image: docker:20.10.8-dind
+                securityContext:
+                  privileged: true
+                volumeMounts:
+                  - name: docker-socket
+                    mountPath: /var/run/docker.sock
+              - name: kubectl
+                image: bitnami/kubectl:latest
+                command:
+                - cat
+                tty: true
+              volumes:
+              - name: docker-socket
+                hostPath:
+                  path: /var/run/docker.sock
+            """
+        }
+    }
+    
+    environment {
+        DOCKER_REGISTRY = "gcr.io/your-project-id"
+        APP_NAME = "sample-app"
+    }
+    
+    stages {
+        stage('Build and Push Docker Image') {
+            steps {
+                container('docker') {
+                    sh '''
+                    echo "Building Docker image..."
+                    docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER} .
+                    
+                    echo "Pushing Docker image..."
+                    docker push ${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                    echo "Updating deployment with new image..."
+                    kubectl set image deployment/${APP_NAME} ${APP_NAME}=${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER} -n app
+                    
+                    echo "Waiting for rollout to complete..."
+                    kubectl rollout status deployment/${APP_NAME} -n app
+                    '''
+                }
+            }
+        }
+        
+        stage('Verify Deployment') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                    echo "Checking deployment status..."
+                    kubectl get deployment ${APP_NAME} -n app -o wide
+                    
+                    echo "Checking HPA status..."
+                    kubectl get hpa -n app
+                    '''
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "Deployment successful!"
+        }
+        failure {
+            echo "Deployment failed!"
+        }
+    }
+}
