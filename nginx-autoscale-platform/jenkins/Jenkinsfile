@@ -1,0 +1,56 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKER_HUB_CREDENTIALS = credentials('docker-hub-id')
+    GCP_CREDENTIALS_JSON = credentials('gcp-service-account-json')
+    PROJECT_ID = 'your-gcp-project-id'
+    REGION = 'us-central1'
+    CLUSTER_NAME = 'nginx-autoscale-cluster'
+    IMAGE_NAME = 'your_dockerhub_username/nginx-autoscale'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/yourusername/yourrepo.git'
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-id') {
+            def customImage = docker.build("${env.IMAGE_NAME}:latest")
+            customImage.push()
+          }
+        }
+      }
+    }
+
+    stage('Authenticate GKE') {
+      steps {
+        writeFile file: 'gcp-key.json', text: env.GCP_CREDENTIALS_JSON
+        sh '''
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project ${PROJECT_ID}
+          gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${REGION}
+        '''
+      }
+    }
+
+    stage('Deploy to GKE') {
+      steps {
+        sh '''
+          kubectl set image deployment/nginx-app nginx-container=${IMAGE_NAME}:latest --record
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs()
+    }
+  }
+}

@@ -1,0 +1,45 @@
+---
+- name: Setup Jenkins controller and deploy to GKE
+  hosts: controller
+  become: yes
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - git
+          - curl
+          - apt-transport-https
+          - ca-certificates
+          - gnupg
+        state: present
+        update_cache: yes
+
+    - name: Install kubectl
+      shell: |
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        mv kubectl /usr/local/bin/
+
+    - name: Install Helm
+      shell: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Authenticate to GKE (make sure gcloud is configured)
+      shell: |
+        gcloud container clusters get-credentials nginx-autoscale-cluster \
+          --region us-central1 \
+          --project YOUR_PROJECT_ID
+
+    - name: Deploy Kubernetes manifests
+      shell: |
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/hpa.yaml
+
+    - name: Deploy Prometheus + Grafana via Helm
+      shell: |
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo update
+        helm install monitoring prometheus-community/kube-prometheus-stack
