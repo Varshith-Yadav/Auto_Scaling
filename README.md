@@ -6,6 +6,9 @@ A comprehensive DevOps solution that deploys an auto-scaling NGINX application o
 
 This platform demonstrates a production-ready DevOps implementation that leverages infrastructure as code, containerization, orchestration, configuration management, and continuous integration/deployment to create a fully automated, scalable application environment on Google Cloud Platform.
 
+![image](https://github.com/user-attachments/assets/abe1c066-4b03-46f0-beb6-64f7937f2510)
+
+
 ## 🧱 Technology Stack
 
 - **Web Server:** NGINX containerized application
