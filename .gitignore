@@ -1,0 +1,86 @@
+# Node & React (if used later)
+node_modules/
+build/
+dist/
+.env
+.env.local
+
+# Python (if used for automation or scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+terraform.tfvars
+terraform.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ansible
+*.retry
+*.log
+inventory.ini
+host_vars/
+group_vars/
+
+# Docker
+*.log
+docker-compose.override.yml
+docker-compose.dev.yml
+
+# Helm
+*.tgz
+charts/
+values.override.yaml
+
+# Kubernetes
+kubeconfig.yaml
+.kube/
+
+# Jenkins
+/secrets/
+*.jenkins
+*.hpi
+*.bak
+*.old
+jenkins_home/
+init.groovy.d/
+
+# Google Cloud
+*.json
+.gcloud/
+GOOGLE_APPLICATION_CREDENTIALS
+credentials.json
+gcloud-key.json
+*.key.json
+
+# Prometheus / Grafana
+prometheus-data/
+grafana-data/
+prometheus.yml
+grafana.ini
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Misc
+.idea/
+.vscode/
+*.iml
