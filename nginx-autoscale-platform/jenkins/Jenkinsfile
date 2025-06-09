@@ -2,18 +2,18 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_HUB_CREDENTIALS = credentials('docker-hub-id')
+    DOCKER_HUB_CREDENTIALS = credentials('docker-credentials')
     GCP_CREDENTIALS_JSON = credentials('gcp-service-account-json')
-    PROJECT_ID = 'your-gcp-project-id'
+    PROJECT_ID = 'Iac_Project'
     REGION = 'us-central1'
     CLUSTER_NAME = 'nginx-autoscale-cluster'
-    IMAGE_NAME = 'your_dockerhub_username/nginx-autoscale'
+    IMAGE_NAME = 'varshithyadav/nginx-autoscale'
   }
 
   stages {
     stage('Checkout') {
       steps {
-        git 'https://github.com/yourusername/yourrepo.git'
+        git 'https://github.com/Varshith-Yadav/Auto_Scaling.git'
       }
     }
 
